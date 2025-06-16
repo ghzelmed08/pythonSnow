@@ -40,6 +40,8 @@ def setConfig(jsonCfg):
 
 ##function for btn start
 def beginBackUp():
+    print("DEBUT beginBackUp")
+    
     # Validation des champs requis
     if not config:
         mg.showerror("Erreur", "Veuillez d'abord configurer l'authentification")
@@ -72,6 +74,8 @@ def beginBackUp():
 
 def backup_cli(instance, user, password, table, output_file, query=None):
     """Fonction de sauvegarde"""
+    print("DEBUT backup_cli")
+    
     manager = BackupManager(
         config={'instance': instance, 'user': user, 'password': password},
         folder=folder,  # CORRECTION: Utiliser la variable globale folder
@@ -79,7 +83,11 @@ def backup_cli(instance, user, password, table, output_file, query=None):
         table_name=table,
         query=query
     )
-    return manager.execute_backup()
+    
+    print("Appel de execute_backup")
+    result = manager.execute_backup()
+    print(f"Résultat: {result}")
+    return result
 
 ###################
 # INTERFACE GRAPHIQUE
