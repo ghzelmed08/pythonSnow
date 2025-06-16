@@ -10,6 +10,7 @@ from tkinter import filedialog as fl
 from tkinter import messagebox as mg 
 from config_auth import CONFIG_AUTH as cf
 from backup_manager import BackupManager  
+from xml_combiner import XMLCombiner
 
 root = tk.Tk()
 folder = ""  # CORRECTION: Utiliser une chaîne simple au lieu de StringVar
@@ -60,6 +61,7 @@ def beginBackUp():
     if not output_file:
         mg.showerror("Erreur", "Veuillez spécifier le nom du fichier de sortie")
         return
+
     
     query = query_parm.get().strip()  # Peut être vide si pas de specic
     
@@ -70,7 +72,18 @@ def beginBackUp():
     print(f"- Fichier: {output_file}")
     print(f"- Query: {query if query else 'Aucune query spécifique'}")
     
-    backup_cli(config["instance"], config["user"], config["password"], table, output_file, query)
+    result=  backup_cli(config["instance"], config["user"], config["password"], table, output_file, query)
+    if  (not  result) :
+        mg.showerror("Erreur", "Problème de la creation des fichiers d'exports. ")
+        return
+    #Sinon combiner les fichiers
+    combiner = XMLCombiner(folder,table,output_file) 
+    success = combiner.combine()
+        
+    if success:
+         mg.showinfo("Succès", f"Sauvegarde terminée avec succès!\nFichier généré: {output_file}.xml")
+    else:
+         mg.showerror("Erreur", "Problème lors de la combinaison des fichiers XML.")
 
 def backup_cli(instance, user, password, table, output_file, query=None):
     """Fonction de sauvegarde"""

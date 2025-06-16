@@ -18,9 +18,9 @@ class CONFIG_AUTH(tk.Toplevel):
         self.password_var = tk.StringVar()
         self.cgf = {}
         self.callback = callback
-        self.configure()
+        self.configurer()
         
-    def configure(self):
+    def configurer(self):
         #configure actual window
         self.columnconfigure(0, weight=1)
         
