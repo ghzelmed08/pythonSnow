@@ -3,12 +3,11 @@ import json
 from tkinter import ttk
 from tkinter import filedialog as fl
 from tkinter import messagebox as mg 
-from config_auth import CONFIG_AUTH 
+from config_auth import CONFIG_AUTH as cf
 root = tk.Tk()
 folder = ""
 config = {}
 
-print("Version chargée :", CONFIG_AUTH.__name__)
 ##function to return pathname
 def getFolder():
     global folder
@@ -19,18 +18,16 @@ def getFolder():
         return
 ###function to call  config window
 def call_config():
-    config  =CONFIG_AUTH(callback=setconfig)
+    config  =cf(root,setConfig)
     config.focus()###Donner le focus à la nouvelle fenetre
 
 
 ###function for callBack
-def setconfig(jsonCfg):
+def setConfig(jsonCfg):
     global config
     config = jsonCfg
-    ######jsConfig  = json.loads(config) cause une erreur
-    print(f"ceci s'affiche veut dire on a recu la bonne configuration {jsonCfg}")
-   ## print(json.dumps(config,indent=3))
-   
+    print("ceci s'affiche veut dire on a recu la bonne configuration ")
+    
 
 
 
@@ -79,7 +76,7 @@ btn_configure.grid(row=0,column=0,sticky="WE")
 lbl_table = ttk.Label(frame_1,foreground="blue",background="green",text="Selectionnez la table cible: ")
 lbl_table.grid(row=0,column=1)
 #adding text zone for table
-txt_table = ttk.Entry(frame_1,foreground="black",width=20,background="green",textvariable=table_var)
+txt_table = ttk.Entry(frame_1,foreground="black",width=20,background="green")
 txt_table.grid(row=0,column=2)
 ###END of frame_1###
 

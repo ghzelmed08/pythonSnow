@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog as fl
 
 class CONFIG_AUTH(tk.Toplevel):
-    def __init__(self, parent):
+    def __init__(self, parent, callback):
         super().__init__(parent)
         self.config(
             background="white",          # Fond blanc
@@ -16,6 +16,8 @@ class CONFIG_AUTH(tk.Toplevel):
         self.instance_var = tk.StringVar()
         self.user_var = tk.StringVar()
         self.password_var = tk.StringVar()
+        self.cgf ={}
+        self.callback = callback
         self.configure()
         
     def configure(self):
@@ -89,7 +91,13 @@ class CONFIG_AUTH(tk.Toplevel):
         print("sauvegarde effectué")
         print("Instance:", self.instance_var.get())
         print("Utilisateur:", self.user_var.get())
-        print("Mot de passe:", self.password_var.get())
+        ### Not secure  : print("Mot de passe:", self.password_var.get())
+        self.cgf={
+            "user" : self.instance_var.get(),
+            "password" : self.password_var.get(),
+            "instance" :self.instance_var.get()
+        }
+
         return
     
     ########function to cancel and close the actual window
