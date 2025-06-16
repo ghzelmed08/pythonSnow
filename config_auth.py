@@ -11,12 +11,12 @@ class CONFIG_AUTH(tk.Toplevel):
             pady=25,             # Marge verticale 25 pixel
             relief="groove"     # Bordure 
         )
-        self.geometry("500x350+400+50") #garder la même config de positionnement qaue la fenêtre parent
+        self.geometry("500x350+400+50") #garder la même config de positionnement que la fenêtre parent
         self.grab_set() #mettre en premier plan et interdire les actions sur root
         self.instance_var = tk.StringVar()
         self.user_var = tk.StringVar()
         self.password_var = tk.StringVar()
-        self.cgf ={}
+        self.cgf = {}
         self.callback = callback
         self.configure()
         
@@ -44,8 +44,8 @@ class CONFIG_AUTH(tk.Toplevel):
         frame_02.grid(column=0, row=1, sticky="EW")
         frame_02.columnconfigure(0, weight=2)
         frame_02.columnconfigure(1, weight=1)
-        #Adding label for instuserance
-        label_user = ttk.Label(frame_02, background="grey", padding=(10,10,15,10), width=30, text="Nomde l'utilisateur")
+        #Adding label for user
+        label_user = ttk.Label(frame_02, background="grey", padding=(10,10,15,10), width=30, text="Nom de l'utilisateur")
         label_user.grid(column=0, row=0, sticky="E")
         #Adding Entry for user
         input_user = ttk.Entry(frame_02, background="white", width=40, textvariable=self.user_var)
@@ -75,6 +75,7 @@ class CONFIG_AUTH(tk.Toplevel):
         frame_04 = ttk.Frame(self, padding=(15,10,15,10))
         frame_04.grid(column=0, row=3, sticky="EW")
         frame_04.columnconfigure(0, weight=1)
+        frame_04.columnconfigure(1, weight=1)  # Ajouter cette ligne pour équilibrer les colonnes
        
         #Adding button Sauvegarder 
         btn_save = ttk.Button(frame_04, text="Sauvegarder", padding=(20,15,20,10), width=20, command=self.sauvegarder)
@@ -88,17 +89,25 @@ class CONFIG_AUTH(tk.Toplevel):
 
     ######function command to save json obj
     def sauvegarder(self):
-        print("sauvegarde effectué")
+        print("sauvegarde effectuée")
         print("Instance:", self.instance_var.get())
         print("Utilisateur:", self.user_var.get())
         ### Not secure  : print("Mot de passe:", self.password_var.get())
-        self.cgf={
-            "user" : self.instance_var.get(),
-            "password" : self.password_var.get(),
-            "instance" :self.instance_var.get()
+        
+        # CORRECTION DU BUG ICI - Utiliser les bonnes variables
+        self.cgf = {
+            "user": self.user_var.get(),        # CORRECTION: était self.instance_var.get()
+            "password": self.password_var.get(),
+            "instance": self.instance_var.get()
         }
-
-        return
+        
+        print(f"teste de la valeur  {self.cgf}")
+        
+        # Vérifier que le callback existe avant de l'appeler
+        if self.callback:
+            self.callback(self.cgf)
+        
+        self.destroy()
     
     ########function to cancel and close the actual window
     def annuler(self):

@@ -26,8 +26,22 @@ def call_config():
 def setConfig(jsonCfg):
     global config
     config = jsonCfg
-    print("ceci s'affiche veut dire on a recu la bonne configuration ")
-    
+    print(f"ceci s'affiche veut dire on a recu la bonne configuration {config}")
+
+
+##function for btn start
+
+def beginBackUp():
+    table = table_var.get()
+    print (config["user"])
+
+
+
+###################
+###################
+###FUNCTION ----END
+####################
+####################
 
 
 
@@ -76,7 +90,7 @@ btn_configure.grid(row=0,column=0,sticky="WE")
 lbl_table = ttk.Label(frame_1,foreground="blue",background="green",text="Selectionnez la table cible: ")
 lbl_table.grid(row=0,column=1)
 #adding text zone for table
-txt_table = ttk.Entry(frame_1,foreground="black",width=20,background="green")
+txt_table = ttk.Entry(frame_1,foreground="black",width=20,background="green",textvariable=table_var)
 txt_table.grid(row=0,column=2)
 ###END of frame_1###
 
@@ -114,7 +128,7 @@ txt_file_name.grid(column=2,row=0)
 frame_4.columnconfigure(0,weight=2)
 frame_4.columnconfigure(1,weight=1)
 frame_3.columnconfigure(2,weight=1)
-btn_start = ttk.Button(frame_4, text="Débuter la sauvegarde" ,padding=(15,10,15,10), width=25)
+btn_start = ttk.Button(frame_4, text="Débuter la sauvegarde" ,padding=(15,10,15,10), width=25,command=beginBackUp)
 btn_start.grid(column=0,row=0, sticky="EW")
 
 ###################
