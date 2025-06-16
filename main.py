@@ -12,173 +12,180 @@ from config_auth import CONFIG_AUTH as cf
 from backup_manager import BackupManager  
 
 root = tk.Tk()
-folder = tk.StringVar(root)
+folder = ""  # CORRECTION: Utiliser une chaîne simple au lieu de StringVar
 config = {}
-query_parm =tk.StringVar(root)
+query_parm = tk.StringVar(root)
+
 ##function to return pathname
 def getFolder():
     global folder
-    path_name = fl.askdirectory(title ="choisissez un dossier pour le ficher de sauvegarde")
-    if(path_name):
-        print(f"dossier choisi : {path_name}")
+    path_name = fl.askdirectory(title="Choisissez un dossier pour le fichier de sauvegarde")
+    if path_name:
+        print(f"Dossier choisi : {path_name}")
         folder = path_name
-        return
-###function to call  config window
-def call_config():
-    config  =cf(root,setConfig)
-    config.focus()###Donner le focus à la nouvelle fenetre
+        # Optionnel: afficher le dossier sélectionné dans l'interface
+        lbl_folder_selected.config(text=f"Dossier: {os.path.basename(path_name)}")
+        return folder
 
+###function to call config window
+def call_config():
+    config_window = cf(root, setConfig)
+    config_window.focus()  # Donner le focus à la nouvelle fenêtre
 
 ###function for callBack
 def setConfig(jsonCfg):
     global config
     config = jsonCfg
-    print(f"ceci s'affiche veut dire on a recu la bonne configuration {config}")
-
+    print(f"Configuration reçue: {config}")
 
 ##function for btn start
-
 def beginBackUp():
-    table = table_var.get()
-    user = config["user"]
-    password = config["password"]
-    output_file = ouput_file_name.get()
-    query = query_parm.get()
-    instance = config["instance"]
-    backup_cli(instance, user, password, table, output_file, query)
-
-
+    # Validation des champs requis
+    if not config:
+        mg.showerror("Erreur", "Veuillez d'abord configurer l'authentification")
+        return
+    
+    if not folder:
+        mg.showerror("Erreur", "Veuillez sélectionner un dossier de destination")
+        return
+    
+    table = table_var.get().strip()
+    if not table:
+        mg.showerror("Erreur", "Veuillez spécifier le nom de la table")
+        return
+    
+    output_file = ouput_file_name.get().strip()
+    if not output_file:
+        mg.showerror("Erreur", "Veuillez spécifier le nom du fichier de sortie")
+        return
+    
+    query = query_parm.get().strip()  # Peut être vide si pas de specic
+    
+    # Lancement de la sauvegarde
+    print("Début de la sauvegarde:")
+    print(f"- Table: {table}")
+    print(f"- Dossier: {folder}")
+    print(f"- Fichier: {output_file}")
+    print(f"- Query: {query if query else 'Aucune query spécifique'}")
+    
+    backup_cli(config["instance"], config["user"], config["password"], table, output_file, query)
 
 def backup_cli(instance, user, password, table, output_file, query=None):
-    """Exemple d'utilisation en ligne de commande"""
+    """Fonction de sauvegarde"""
     manager = BackupManager(
         config={'instance': instance, 'user': user, 'password': password},
-        folder='.',  # Dossier courant
+        folder=folder,  # CORRECTION: Utiliser la variable globale folder
         output_filename=output_file,
         table_name=table,
         query=query
     )
     return manager.execute_backup()
 
-
 ###################
+# INTERFACE GRAPHIQUE
 ###################
-###FUNCTION ----END
-####################
-####################
 
-
-######GRAPHIQUE and FRAMES#####
-#########################################################################################################
 ##Titre de la fenêtre
-root.title("Backup data ")
-###Declaration de variables
+root.title("Backup Data ServiceNow")
+
+###Déclaration de variables
 #Variable pour le nom de la table
 table_var = tk.StringVar(root)
 #variable pour le nom du fichier output
 ouput_file_name = tk.StringVar(root)
 #variable pour nom de l'instance
 url_instance = tk.StringVar()
-#Defie window size
-root.geometry('800x500+400+50')
-username  = tk.StringVar()
+#Définir la taille de la fenêtre
+root.geometry('800x600+400+50')
+username = tk.StringVar()
+
 #Configurer le layout du conteneur principal
-root.columnconfigure(0,weight=1)
+root.columnconfigure(0, weight=1)
+
 ##############################################
-#################FRAMES#######################
+# FRAMES
 ##############################################
-#Configurer les  quatres frames
-frame_1 = ttk.Frame(root, padding=(20,50,20,0))
-frame_1.grid(column=0,row=0,sticky="EW")
-#frame_11 pour ajouter la query oublié 
+#Configurer les frames
+frame_1 = ttk.Frame(root, padding=(20,20,20,10))
+frame_1.grid(column=0, row=0, sticky="EW")
 
-frame_11 = ttk.Frame(root,padding=(15,10, 15,5))
-frame_11.grid(column=0,row=1,sticky="EW")
-frame_11.columnconfigure(0,weight=1)
-#frame_2 pour les label
-frame_2 = ttk.Frame(root,padding=(15,10, 15,5))
-frame_2.grid(column=0,row=2,sticky="EW")
-frame_2.columnconfigure(0,weight=1)
+#frame_11 pour la query
+frame_11 = ttk.Frame(root, padding=(15,10,15,10))
+frame_11.grid(column=0, row=1, sticky="EW")
 
+#frame_2 pour le dossier
+frame_2 = ttk.Frame(root, padding=(15,10,15,10))
+frame_2.grid(column=0, row=2, sticky="EW")
 
-#frame_3 pour les zones de texte
-frame_3 = ttk.Frame(root,padding=(15,10,15,5))
-frame_3.grid(column=0,row=3,sticky="EW")
-######
-#frame_4 pour le boution demarrer sauvegarde
-frame_4 = ttk.Frame(root,padding=(15,10,15,5))
-frame_4.grid(column=0,row=4,sticky="EW",columnspan=3)
+#frame_3 pour le nom du fichier
+frame_3 = ttk.Frame(root, padding=(15,10,15,10))
+frame_3.grid(column=0, row=3, sticky="EW")
+
+#frame_4 pour le bouton de démarrage
+frame_4 = ttk.Frame(root, padding=(15,20,15,20))
+frame_4.grid(column=0, row=4, sticky="EW")
+
 ###########################################################################################
-##############################################################################################
+# CONTENU DES FRAMES
+###########################################################################################
 
 #Adding controls to frame_1
-####
-frame_1.columnconfigure(0,weight=2)
-frame_1.columnconfigure(1,weight=1)
-frame_1.columnconfigure(2,weight=1)
-btn_configure = ttk.Button(frame_1,text="Configure Authentification",padding=(10,15,5,15),command=call_config)
-btn_configure.grid(row=0,column=0,sticky="W")
-lbl_table = ttk.Label(frame_1,foreground="blue",background="grey",text="Selectionnez la table cible: ")
-lbl_table.grid(row=0,column=1)
-#adding text zone for table
-txt_table = ttk.Entry(frame_1,foreground="black",width=40,background="green",textvariable=table_var)
-txt_table.grid(row=0,column=2)
-###END of frame_1###
+frame_1.columnconfigure(0, weight=1)
+frame_1.columnconfigure(1, weight=1)
+frame_1.columnconfigure(2, weight=2)
 
-#####
-#Adding controls to frame_2
-#####
-frame_2.columnconfigure(0,weight=2)
-frame_2.columnconfigure(1,weight=1)
-frame_2.columnconfigure(2,weight=1)
-#label pour le bouton output folder
-lbl_output_fd = ttk.Label(frame_2,foreground="blue",background="grey", text="Selectionner le dossier d'extraction ")
-lbl_output_fd.grid(column=1,row=0)
-#Adding btn to get folder destination
+btn_configure = ttk.Button(frame_1, text="Configurer l'authentification", padding=(10,10,10,10), command=call_config)
+btn_configure.grid(row=0, column=0, sticky="W", padx=(0,10))
 
-btn_fd =ttk.Button(frame_2,text="Dossier",width=20,command=getFolder)
-btn_fd.grid(column=2,row=0)
+lbl_table = ttk.Label(frame_1, text="Nom de la table:")
+lbl_table.grid(row=0, column=1, sticky="E", padx=(0,5))
 
-####
-##Adding controls to frame 3 
-### textzone and button
-frame_3.columnconfigure(0,weight=2)
-frame_3.columnconfigure(1,weight=1)
-frame_3.columnconfigure(2,weight=1)
-#label pour le nom du fichier
-lbl_file_name = ttk.Label(frame_3,foreground="blue",background="grey",text="Choisir le nom du fihcier xml de sortie",)
-lbl_file_name.grid(column=1,row=0,pady=20)
-#Adding text zone for output filename
-txt_file_name = ttk.Entry(frame_3,textvariable=ouput_file_name,background="green",foreground="blue",width=40)
-txt_file_name.grid(column=2,row=0, pady=50,sticky="E")
+txt_table = ttk.Entry(frame_1, width=30, textvariable=table_var)
+txt_table.grid(row=0, column=2, sticky="W")
 
-###End of frame_3
+#Adding controls to frame_11 (Query)
+frame_11.columnconfigure(0, weight=1)
+frame_11.columnconfigure(1, weight=2)
 
-####
-##Adding controls to frame  
-frame_4.columnconfigure(0,weight=2)
-frame_4.columnconfigure(1,weight=1)
-frame_3.columnconfigure(2,weight=1)
-btn_start = ttk.Button(frame_4, text="Débuter la sauvegarde" ,padding=(15,10,15,10), width=25,command=beginBackUp)
-btn_start.grid(column=0,row=0, sticky="S",pady=30)
+lbl_query = ttk.Label(frame_11, text="Query personnalisée (optionnel):")
+lbl_query.grid(column=0, row=0, sticky="E", padx=(0,5))
 
-###################
-##############END of FRame_4################
-##################
+txt_query = ttk.Entry(frame_11, textvariable=query_parm, width=50)
+txt_query.grid(column=1, row=0, sticky="W")
 
-####
-##Adding controls to frame_11
-### textzone and button
-frame_11.columnconfigure(0,weight=2)
-frame_11.columnconfigure(1,weight=1)
-frame_11.columnconfigure(2,weight=1)
-#label pour le nom du fichier
-lbl_query = ttk.Label(frame_11,foreground="blue",background="grey",text="saisir la query  sans ajouter sysparm_query=")
-lbl_query.grid(column=1,row=0,pady=29)
-#Adding text zone for output filename
-txt_query = ttk.Entry(frame_11,textvariable=query_parm,background="green",foreground="blue",width=40)
-txt_query.grid(column=2,row=0)
+#Adding controls to frame_2 (Dossier)
+frame_2.columnconfigure(0, weight=1)
+frame_2.columnconfigure(1, weight=1)
+frame_2.columnconfigure(2, weight=1)
 
-###End of frame_3
+lbl_output_fd = ttk.Label(frame_2, text="Dossier de destination:")
+lbl_output_fd.grid(column=0, row=0, sticky="E", padx=(0,5))
+
+btn_fd = ttk.Button(frame_2, text="Parcourir...", command=getFolder)
+btn_fd.grid(column=1, row=0, padx=(5,10))
+
+lbl_folder_selected = ttk.Label(frame_2, text="Aucun dossier sélectionné", foreground="gray")
+lbl_folder_selected.grid(column=2, row=0, sticky="W")
+
+#Adding controls to frame_3 (Nom du fichier)
+frame_3.columnconfigure(0, weight=1)
+frame_3.columnconfigure(1, weight=2)
+
+lbl_file_name = ttk.Label(frame_3, text="Nom du fichier de base:")
+lbl_file_name.grid(column=0, row=0, sticky="E", padx=(0,5))
+
+txt_file_name = ttk.Entry(frame_3, textvariable=ouput_file_name, width=30)
+txt_file_name.grid(column=1, row=0, sticky="W")
+
+# Note explicative
+lbl_note = ttk.Label(frame_3, text="Note: 16 fichiers seront créés (nom_01.xml à nom_16.xml)", 
+                     foreground="blue", font=("TkDefaultFont", 8))
+lbl_note.grid(column=1, row=1, sticky="W", pady=(5,0))
+
+#Adding controls to frame_4 (Bouton de démarrage)
+frame_4.columnconfigure(0, weight=1)
+
+btn_start = ttk.Button(frame_4, text="Débuter la sauvegarde", padding=(20,10,20,10), command=beginBackUp)
+btn_start.grid(column=0, row=0)
 
 root.mainloop()

@@ -1,20 +1,27 @@
 import requests
-
 from requests.auth import HTTPBasicAuth
 import os
-from urllib.parse import quote
 from tkinter import messagebox as mg
+
 print(requests.__version__)
+
 class BackupManager:
     def __init__(self, config, folder, output_filename, table_name, query=None):
         self.config = config
         self.folder = folder
-        self.output_filename = output_filename + ".xml"
+        self.output_filename = output_filename
         self.table_name = table_name
-        self.query = (query +"^ORDERBYsys_id ^sys_idSTARTSWITH{0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f}")  or "ORDERBYsys_id ^sys_idSTARTSWITH{0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f}"
+        # Si query est fournie, l'ajouter, sinon utiliser seulement le tri par défaut
+        if query and query.strip():
+            self.base_query = f"{query}^ORDERBYsys_id"
+        else:
+            self.base_query = "ORDERBYsys_id"
+        
+        # Les 16 caractères hexadécimaux pour créer 16 fichiers
+        self.hex_chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
 
     def execute_backup(self):
-        # si erreur de donnnée on reçois  un message box d erreur
+        # Validation des données
         if not self.config:
             mg.showerror("Erreur", "Configuration d'authentification manquante")
             return False
@@ -28,35 +35,70 @@ class BackupManager:
             mg.showerror("Erreur", "Table cible non spécifiée")
             return False
 
-        # Construction de l'URL avec servicenow comme base
+        # Construction de l'URL de base
         base_url = f"https://{self.config['instance']}.service-now.com/"
-        encoded_query = quote(self.query) ##pour encoder en url mais je supprime si ça fonctionne pas comme le cas manuellement parfois
-        #encoded_query = self.query
-        url = f"{base_url}{self.table_name}_list.do?XML&sysparm_query={encoded_query}"
-
-        # Chemin du output file
-        #A verifier avec un print
-        output_path = os.path.join(self.folder, self.output_filename)
-
-        try:
-            # Envoi de la requête get 
-            response = requests.get(
-                url,
-                auth=HTTPBasicAuth(self.config['user'], self.config['password']),
-                stream=True
-            )
-
-            # Vérification de la réponse
-            if response.status_code == 200:
-                with open(output_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                mg.showinfo("Succès", f"Export terminé avec succès!\n 16 Fichiers sauvegardés à:\n{self.folder}")
-                return True
-            else:
-                mg.showerror("Erreur", f"Échec de l'export (Code {response.status_code})\n{response.text}") ####a aajouter un quote si erreur de  escape
-                return False
-
-        except Exception as e:
-            mg.showerror("Erreur", f"Une erreur s'est produite:\n{str(e)}")
+        
+        successful_files = 0
+        failed_files = 0
+        
+        # Créer 16 fichiers, un pour chaque caractère hexadécimal
+        for i, hex_char in enumerate(self.hex_chars):
+            # Construction de la query pour ce caractère spécifique
+            query_for_char = f"{self.base_query}^sys_idSTARTSWITH{hex_char}"
+            
+            # URL complète pour cette requête - SANS ENCODAGE
+            url = f"{base_url}{self.table_name}_list.do?XML&sysparm_query={query_for_char}"
+            print(f"url finale debugg {url}")
+            # Nom du fichier  une boucle 
+            filename = f"{self.output_filename}_{i+1:02d}.xml"  # export_01.xml, export_02.xml, etc.
+            output_path = os.path.join(self.folder, filename)
+            
+            try:
+                print(f"Téléchargement du fichier {i+1}/16: {filename}")
+                print(f"Query finale: {query_for_char}")
+                print(f"URL complète: {url}")
+                
+                # Envoi de la requête GET avec python basé sur les exemples servicenow
+                response = requests.get(
+                    url,
+                    auth=HTTPBasicAuth(self.config['user'], self.config['password']),
+                    stream=True,
+                    timeout=360  # Timeout de 360 secondes
+                )
+                
+                print(f"Réponse reçue: {response.status_code}")
+                
+                # Vérification de la réponse
+                if response.status_code == 200:
+                    with open(output_path, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:  # Filtrer les chunks vides
+                                f.write(chunk)
+                    
+                    # Vérifier que le fichier a été créé et n'est pas vide
+                    if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+                        successful_files += 1
+                        print(f"✓ Fichier {filename} créé avec succès")
+                    else:
+                        failed_files += 1
+                        print(f"✗ Fichier {filename} vide ou non créé")
+                        
+                else:
+                    failed_files += 1
+                    print(f"✗ Échec pour {filename} (Code {response.status_code}): {response.text[:200]}")
+                    
+            except Exception as e:
+                failed_files += 1
+                print(f"✗ Erreur pour {filename}: {str(e)}")
+                
+        # Affichage du résultat final avec nombre reel de fichier crée
+        if successful_files > 0:
+            message = f"Export terminé!\n{successful_files} fichiers créés avec succès"
+            if failed_files > 0:
+                message += f"\n{failed_files} fichiers ont échoué"
+            message += f"\nFichiers sauvegardés dans:\n{self.folder}"
+            mg.showinfo("Résultat", message)
+            return True
+        else:
+            mg.showerror("Erreur", f"Aucun fichier n'a pu être créé.\n{failed_files} tentatives ont échoué.")
             return False
