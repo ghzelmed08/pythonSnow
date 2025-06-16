@@ -79,11 +79,13 @@ def beginBackUp():
     #Sinon combiner les fichiers
     combiner = XMLCombiner(folder,table,output_file) 
     success = combiner.combine()
-        
+    
     if success:
          mg.showinfo("Succès", f"Sauvegarde terminée avec succès!\nFichier généré: {output_file}.xml")
+         table = ""
     else:
          mg.showerror("Erreur", "Problème lors de la combinaison des fichiers XML.")
+         
 
 def backup_cli(instance, user, password, table, output_file, query=None):
     """Fonction de sauvegarde"""
