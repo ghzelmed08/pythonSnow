@@ -94,7 +94,7 @@ class CONFIG_AUTH(tk.Toplevel):
         print("Utilisateur:", self.user_var.get())
         ### Not secure  : print("Mot de passe:", self.password_var.get())
         
-        # CORRECTION DU BUG ICI - Utiliser les bonnes variables
+        # CORRECTION DU BUG 
         self.cgf = {
             "user": self.user_var.get(),        # CORRECTION: était self.instance_var.get()
             "password": self.password_var.get(),
