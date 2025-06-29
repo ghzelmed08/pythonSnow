@@ -50,7 +50,11 @@ def setConfig(jsonCfg):
 
 ## function for btn start
 def beginBackUp():
-    log("DEBUT beginBackUp")
+    log("DEBUT beginBackUp \n")
+    # Effacer les logs deja dans le widget
+    log_output.configure(state="normal") #c'est obligatoire sinon tu reçois une erreur. c'est pour débloquer le scrolledText
+    log_output.delete(1.0, tk.END) #de l'élément  ligne1 position 0 vers le tk.END  qui est la fin du log
+    log_output.configure(state="disabled")# ici je remets le verrouillage du log
     
     # Validation des champs requis
     if not config:
