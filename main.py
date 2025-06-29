@@ -25,6 +25,7 @@ def log(msg):
     log_output.insert(tk.END, msg + "\n")
     log_output.see(tk.END)  # Scroll automatique vers le bas
     log_output.configure(state="disabled")
+    root.update_idletasks()##  tester cette methode pour voir si tkinter rafraichit ou non le textScrolled widget
 
 ## function to return pathname
 def getFolder():
