@@ -97,6 +97,30 @@ def beginBackUp():
     if success:
         mg.showinfo("Succès", f"Sauvegarde terminée avec succès!\nFichier généré: {output_file}.xml")
         log("✅ Sauvegarde terminée avec succès.")
+        ############################
+        ######      Nettoyage des fichiers extraits###################
+        ############################
+        try:
+            for i in range(1, 17):
+                part_filename = f"{output_file}_{i:02d}.xml"
+                part_path = os.path.join(folder, part_filename)
+                if os.path.exists(part_path):
+                    os.remove(part_path)
+                    log(f"🧹 Fichier temporaire supprimé : {part_filename}")
+        except Exception as e:
+            log(f"⚠️ Erreur lors du nettoyage des fichiers fragmentés : {e}")
+
+        # Ouvrir le dossier dans l'explorateur Windows. Ceci est seulement pour Windows.. Linux demande uen autre méthode et donc à faire plus tard
+        ##source https://www.youtube.com/watch?app=desktop&v=iV5sti2hJJQ
+        try:
+            os.startfile(folder)
+            log(f"📂 Dossier ouvert : {folder}")
+        except Exception as e:
+            log(f"Impossible d'ouvrir le dossier automatiquement. Erreur : {e}")
+
+
+        #####################Fin procédure Nettoyage#######
+        ######################################################
     else:
         mg.showerror("Erreur", "Problème lors de la combinaison des fichiers XML.")
         log("❌ Erreur lors de la combinaison des fichiers XML.")
