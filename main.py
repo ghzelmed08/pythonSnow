@@ -47,7 +47,7 @@ def call_config():
 def setConfig(jsonCfg):
     global config
     config = jsonCfg
-    log(f"Configuration reçue: {config}")
+    print(f"Configuration reçue: {config}")
 
 ## function for btn start
 def beginBackUp():

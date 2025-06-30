@@ -12,6 +12,7 @@ class BackupManager:
         self.output_filename = output_filename
         self.table_name = table_name
         self.logger = logger or print  # Utilise `print`  si logger n'est pas passé dans les paramètres de backup manager
+        self.logger(f"BackupManager initialisé avec output_filename = {output_filename}")#pour debuggage
         # Si query est fournie, l'ajouter, sinon utiliser seulement le tri par défaut
         if query and query.strip():
             self.base_query = f"{query}^ORDERBYsys_id"
@@ -63,7 +64,7 @@ class BackupManager:
             self.logger(f"Téléchargement du fichier {i+1}/16: {filename}")
             self.logger(f"Query finale: {query_for_char}")
             self.logger(f"URL complète: {url}")
-            
+            self.logger(f"Création fichier : {filename}")##verification du nom à extraire
             # Envoi de la requête GET avec python basé sur les exemples servicenow
             response = requests.get(
                 url,
